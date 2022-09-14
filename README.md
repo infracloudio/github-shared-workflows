@@ -107,7 +107,7 @@ on:
 
 jobs:
   ReuseableJob:
-    uses: infracloudio/reusable-github-actions/.github/workflows/policy-check.yml@main
+    uses: infracloudio/reusable-github-actions-workflows/.github/workflows/policy-check.yml@main
     secrets: inherit
     with:
       varset: 
