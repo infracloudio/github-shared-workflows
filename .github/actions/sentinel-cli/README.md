@@ -5,13 +5,17 @@ This workflow checks organization level sentinel policies against your terraform
 #### workflow requires few parameters to be passed to it
 
 Inputs
-- varset : name of the variable set containing aws credentials
-- organization : terraform cloud org name
-- workspace: terraform cloud workspace name
-- TF_TOKEN : terraform cloud token having permission for the workspace
-- terraform-code-path: path to terraform code against you want to run policy checks
-- sentinel-policy-path: path to your sentinel policies and its dependecies
-- GITHUB_TOKEN: token required to authenticate  write to the pr
+
+| Name | Type | Description |
+|:------|:------|:-------|
+| varset | String | name of the variable set containing aws credentials |
+| organization | String | terraform cloud org name |
+| workspace | String | terraform cloud workspace name |
+| TF_TOKEN | String | terraform cloud token having permission for the workspace |
+| terraform-code-path | String | path to terraform code against you want to run policy checks |
+| sentinel-policy-path | String | path to your sentinel policies and its dependecies |
+| GITHUB_TOKEN | String | token required to authenticate  write to the pr |
+| image-name | String | sentinel cli script full image name with tag |
 
 To checkout other private repositories deploy keys can been used, a ssh key pair is used for authentication. Public key has been added to the private repo being checked out as deploy key and private key has been added as actions secret to the repo calling workflow. policies can be checked out like mentioned below
 
@@ -30,7 +34,7 @@ Following step creates a docker container to run a shell script, which uploads t
 - name: run docker container containing script
   uses: addnab/docker-run-action@v3
   with:
-    image: ruchabhange/sentinel:latest
+    image: ${{ inputs.image-name }}
     options: -v ${{ inputs.sentinel-policy-path }}/common-functions:/opt/sentinel/common-functions -v ${{ inputs.sentinel-policy-path }}/policies:/opt/sentinel/policies  -v ${{ inputs.terraform-code-path }}:/opt/sentinel/config-code -e TF_TOKEN=${{ inputs.TF_TOKEN }} -e organization=${{ inputs.organization }} -e workspace=${{ inputs.workspace }} -e varset=${{ inputs.varset }}
     shell: bash
     run: /opt/sentinel/script.sh
@@ -43,7 +47,7 @@ Following steps will add policies results to the pr, to add multiline comment an
       if: ${{ github.event_name == 'pull_request' }}
       run: |
         echo 'MESSAGE_ENV<<EOF' >> $GITHUB_ENV
-        cat ${{ inputs.sentinel-policy-path }}/policies/message.txt >> $GITHUB_ENV
+        cat ${{ inputs.sentinel-policy-path }}/policies/PR_COMMENT.md >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
       shell: bash
 - name: write policy check result to pr
@@ -104,6 +108,7 @@ jobs:
           terraform-code-path: ${{ env.current-dir }}/config-code
           sentinel-policy-path: ${{ env.current-dir }}/sentinel-policy-as-code
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          image-name: ruchabhange/sentinel:latest
 
 ```
 
