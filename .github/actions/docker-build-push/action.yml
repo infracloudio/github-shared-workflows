@@ -12,6 +12,8 @@ inputs:
     required: true
   build-args:
     required: false
+  registry:
+    required: false
 outputs:
   imageid:
     value: ${{ steps.build-and-push.outputs.imageid }}
@@ -23,12 +25,18 @@ runs:
       with:
         username: ${{ inputs.DOCKER_REG_USERNAME }}
         password: ${{ inputs.DOCKER_REG_PASSWORD }}
-    - name: set environment variable for dockerfile path
+        registry: ${{ inputs.registry }}
+    - name: set environment variable for dockerfile path and registry
       run: |
-        if [[ ${{ inputs.dockerfile-path }} == "" ]]; then
+        if [[ "${{ inputs.dockerfile-path }}" == "" ]]; then
           echo "DOCKERFILE_PATH=." >> $GITHUB_ENV
         else
-          echo "DOCKERFILE_PATH=${{ inputs.dockerfile-path  }}" >> $GITHUB_ENV
+          echo "DOCKERFILE_PATH=${{ inputs.dockerfile-path }}" >> $GITHUB_ENV
+        fi
+        if [[ "${{ inputs.registry }}" == "" ]]; then
+          echo "REGISTRY=" >> $GITHUB_ENV
+        else
+          echo "REGISTRY=${{ inputs.registry }}/" >> $GITHUB_ENV
         fi
       shell: bash
     - name: set environment variable for build args
@@ -46,5 +54,5 @@ runs:
         push: true
         build-args: |
           ${{ env.BUILD_ARGS }}
-        tags: ${{ inputs.DOCKER_REG_USERNAME }}/${{ inputs.image-name }}:latest # image versionining not implemented currently
+        tags: ${{ env.REGISTRY }}${{ inputs.DOCKER_REG_USERNAME }}/${{ inputs.image-name }}:latest # image versionining not implemented currently
 
