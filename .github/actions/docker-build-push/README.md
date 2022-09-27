@@ -5,14 +5,21 @@ This workflow builds and pushes a docker image to a docker registry
 #### workflow requires few parameters to be passed to it
 
 Inputs
-- DOCKER_REG_USERNAME: username to log into docker registry
-- DOCKER_REG_PASSWORD: password to log into docker registry 
-- dockerfile-path: path to Dockerfile, if not mentioned looks for Dockerfile in root directory 
-- image-name: name of the image
-- build-args: build arguments, need to be provided in CSV format as inputs currently doesnt support lists, for e.g. BUILD_ARG1=VALUE1,BUILD_ARG2=VALUE2
+
+| Name | Type | Description |
+|:----|:-----|:------|
+| DOCKER_REG_USERNAME | String | username to log into docker registry |
+| DOCKER_REG_PASSWORD | String | password to log into docker registry |
+| dockerfile-path | String | path to Dockerfile, if not mentioned looks for Dockerfile in root directory | 
+| image-name | String | name of the image |
+| build-args| String | build arguments, a single string need to be provided in **CSV** format as inputs currently doesnt support lists, for e.g. BUILD_ARG1=VALUE1,BUILD_ARG2=VALUE2 |
+| registry | String | docker registry full url, if not mentioned dockerhub will be used by default |  
 
 Outputs
-- imageid: returns the built image id
+
+| Name | Description |
+|:------|:---------|
+| imageid | returns the built image id |
 
 To login to docker repo below action is used
 
@@ -27,12 +34,17 @@ To login to docker repo below action is used
 Following steps sets the Dockerfile path and converts build arguments in required format i.e. each argument seperated by new line
 
 ```yaml
-- name: set environment variable for dockerfile path
+- name: set environment variable for dockerfile path and registry
       run: |
-        if [[ ${{ inputs.dockerfile-path }} == "" ]]; then
+        if [[ "${{ inputs.dockerfile-path }}" == "" ]]; then
           echo "DOCKERFILE_PATH=." >> $GITHUB_ENV
         else
           echo "DOCKERFILE_PATH=${{ inputs.dockerfile-path  }}" >> $GITHUB_ENV
+        fi
+        if [[ "${{ inputs.registry }}" == "" ]]; then
+          echo "REGISTRY=" >> $GITHUB_ENV
+        else
+          echo "REGISTRY=${{ inputs.registry }}/" >> $GITHUB_ENV
         fi
       shell: bash
     - name: set environment variable for build args
@@ -55,7 +67,7 @@ Following step is used to build and push docker image
     push: true
     build-args: |
       ${{ env.BUILD_ARGS }}
-    tags: ${{ inputs.DOCKER_REG_USERNAME }}/${{ inputs.image-name }}:latest # image versionining not implemented currently
+    tags: ${{ env.REGISTRY }}${{ inputs.DOCKER_REG_USERNAME }}/${{ inputs.image-name }}:latest # image versionining not implemented currently
 ```
 
 ### To call this workflow caller workflow can directly implement the below:
@@ -86,6 +98,8 @@ jobs:
           DOCKER_REG_USERNAME: ${{ secrets.DOCKERHUB_PASSWORD }}
           dockerfile-path: ./docker-images/sentinel-cli-script
           image-name: sentinel
-      - run: echo ${{ steps.build-and-push.outputs.imageid }}
+          build-args: SENTINEL_VERSION=0.18.11
+      - name: print image id
+        run: echo ${{ steps.build-and-push.outputs.imageid }}
 ```
 
