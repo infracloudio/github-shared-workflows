@@ -1,0 +1,73 @@
+name: "Checkov Workflow"
+description: "create a plan and run checkov scan againts it"
+
+inputs:
+  AWS_REGION:
+    description: "AWS region"
+    required: true
+  OIDC_ROLE_ARN:
+    description: "OIDC role arn, required to authenticate aws"
+    required: true
+  GITHUB_TOKEN:
+    description: "GITHUB token"
+    required: true
+  
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_wrapper: false
+      
+    - name: Configure AWS Credentials
+      id: awsconfig
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: ${{inputs.AWS_REGION}}
+        role-to-assume: ${{ inputs.OIDC_ROLE_ARN }}
+                    
+    - name: Post comment to GitHub PR if aws config failed
+      uses: mshick/add-pr-comment@v1
+      if: ${{ failure() && steps.awsconfig.outcome == 'failure' }}
+      with:
+        repo-token: ${{ inputs.GITHUB_TOKEN }}
+        allow-repeats: true
+        message: |
+          AWS configuration failed. This is required to generate Terraform plan.
+          Status: **${{ steps.awsconfig.outcome }}**
+                        
+    - name: Initialize Terraform
+      shell: bash
+      run: |
+        terraform init -input=false
+          
+    - name: Plan Terraform
+      shell: bash
+      run: |
+        tfvars=`ls -1 *.tfvars 2>/dev/null | wc -l`
+        if [ $tfvars != 0 ]; then
+        terraform plan -var-file values.tfvars -out tfplan.binary -no-color
+        terraform show -json tfplan.binary | jq '.' > tfplan.json
+        else
+        terraform plan -out tfplan.binary -no-color
+        terraform show -json tfplan.binary | jq '.' > tfplan.json
+        fi
+                
+    - name: checkov scan
+      id: Bridgecrew-file-scanner
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: .
+        file: "tfplan.json"
+        output_format: github_failed_only
+        soft_fail: false
+        skip_check: CKV_AWS_21,CKV_AWS_19,CKV_AWS_145,CKV2_AWS_6,CKV_AWS_144,CKV_AWS_18
+          
+    - name: Post comment to GitHub PR
+      uses: mshick/add-pr-comment@v1
+      if: ${{ failure() && steps.Bridgecrew-file-scanner.outcome == 'failure' }}
+      with:
+        repo-token: ${{ inputs.GITHUB_TOKEN }}
+        message: |
+          ${{ env.CHECKOV_RESULTS }}
