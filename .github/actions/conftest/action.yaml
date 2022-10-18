@@ -1,0 +1,65 @@
+name: conftest terraform
+description: checks organization level policies against terraform code
+inputs:
+  AWS_ACCESS_KEY_ID:
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    required: true
+  AWS_SESSION_TOKEN:
+    required: false
+    description: pass the token if required
+  TF_ROOT:
+    required: true
+  conftest_policy_path:
+    required: true
+  image-name: 
+    required: true
+  GITHUB_TOKEN:
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: setup terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.3.0
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: ap-south-1
+        aws-access-key-id: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ inputs.AWS_SESSION_TOKEN }}
+    - name: Initialize Terraform
+      run: |
+        cd ${{ inputs.TF_ROOT }} 
+        ls ${{ inputs.TF_ROOT }}/tfplan.json
+        terraform init -input=false
+      shell: bash
+    - name: Plan Terraform
+      id: plan
+      run: |
+        terraform plan -var-file values.tfvars -input=false --out tfplan.binary
+        terraform show -json tfplan.binary > tfplan.json
+      shell: bash
+    - name: run docker container containing script
+      uses: addnab/docker-run-action@v3
+      with:
+        image: ${{ inputs.image-name }}
+        options: -v ${{ inputs.conftest_policy_path }}:/opt/conftest-policy  -v ${{ inputs.TF_ROOT }}:/opt/terraform-json -e conftest_policy_path=/opt/conftest-policy -e TF_ROOT=/opt/terraform-json/tfplan.json
+        shell: bash
+        run: /opt/script.sh
+    - name: pass policy check result to env variable
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        echo 'MESSAGE_ENV<<EOF' >> $GITHUB_ENV
+        cat ${{ inputs.TF_ROOT }}/msg.md >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+      shell: bash
+    - name: write policy check result to pr
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: mshick/add-pr-comment@v1
+      with:
+        message: |
+          ${{ env.MESSAGE_ENV }}
+        repo-token: ${{ inputs.GITHUB_TOKEN }}
