@@ -39,7 +39,7 @@ runs:
     - name: Plan Terraform
       id: plan
       run: |
-        terraform plan -var-file values.tfvars -input=false --out tfplan.binary
+        terraform plan -var-file *.tfvars -input=false --out tfplan.binary
         terraform show -json tfplan.binary > tfplan.json
       shell: bash
     - name: run docker container containing script
