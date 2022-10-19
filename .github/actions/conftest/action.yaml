@@ -16,9 +16,11 @@ inputs:
     required: true
   GITHUB_TOKEN:
     required: true
+  TOKEN: 
+    required: true 
 env:
   #Sets token as environment variable
-  TOKEN: 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    
+  TOKEN: ${{ input.TOKEN }}
 runs:
   using: "composite"
   steps:
