@@ -38,18 +38,14 @@ runs:
     - name: Initialize Terraform
       run: |
         git config --local --remove-section http."https://github.com/"
-        git config --global url."https://foo:${TOKEN}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
+        git config --global url."https://ruchabhange:${TOKEN}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
         cd ${{ inputs.TF_ROOT }} 
         #ls ${{ inputs.TF_ROOT }}/tfplan.json
         terraform init -input=false
       shell: bash
     - name: Plan Terraform
-      #env: 
-          #TOKEN: ${{ inputs.TOKEN }}
       id: plan
       run: |
-        git config --local --remove-section http."https://github.com/"
-        git config --global url."https://foo:${TOKEN}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
         cd ${{ inputs.TF_ROOT }} 
         terraform plan  --var-file values.tfvars -input=false --out tfplan.binary
         terraform show -json tfplan.binary > tfplan.json
