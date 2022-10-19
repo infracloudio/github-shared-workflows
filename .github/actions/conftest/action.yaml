@@ -43,7 +43,7 @@ runs:
       run: |
         #git config --local --remove-section http."https://github.com/"
         #git config --global url."https://foo:${TOKEN}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
-        terraform plan -var-file values.tfvars -input=false --out tfplan.binary
+        terraform plan  -input=false --out tfplan.binary
         terraform show -json tfplan.binary > tfplan.json
       shell: bash
     - name: run docker container containing script
