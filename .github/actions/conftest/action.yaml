@@ -37,8 +37,12 @@ runs:
         terraform init -input=false
       shell: bash
     - name: Plan Terraform
+      env: 
+      TOKEN: ${{ secrets.TOKEN }}
       id: plan
       run: |
+        git config --local --remove-section http."https://github.com/"
+        git config --global url."https://foo:${TOKEN}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
         terraform plan -var-file *.tfvars -input=false --out tfplan.binary
         terraform show -json tfplan.binary > tfplan.json
       shell: bash
