@@ -16,6 +16,9 @@ inputs:
     required: true
   GITHUB_TOKEN:
     required: true
+env:
+  #Sets token as environment variable
+  TOKEN: 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    
 runs:
   using: "composite"
   steps:
@@ -32,6 +35,8 @@ runs:
         aws-session-token: ${{ inputs.AWS_SESSION_TOKEN }}
     - name: Initialize Terraform
       run: |
+        git config --local --remove-section http."https://github.com/"
+        git config --global url."https://foo:${TOKEN}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
         cd ${{ inputs.TF_ROOT }} 
         #ls ${{ inputs.TF_ROOT }}/tfplan.json
         terraform init -input=false
@@ -41,8 +46,8 @@ runs:
           #TOKEN: ${{ inputs.TOKEN }}
       id: plan
       run: |
-        #git config --local --remove-section http."https://github.com/"
-        #git config --global url."https://foo:${TOKEN}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
+        git config --local --remove-section http."https://github.com/"
+        git config --global url."https://foo:${TOKEN}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
         cd ${{ inputs.TF_ROOT }} 
         terraform plan  --var-file values.tfvars -input=false --out tfplan.binary
         terraform show -json tfplan.binary > tfplan.json
