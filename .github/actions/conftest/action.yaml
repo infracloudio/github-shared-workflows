@@ -34,9 +34,9 @@ runs:
         aws-session-token: ${{ inputs.AWS_SESSION_TOKEN }}
     - name: Initialize Terraform
       run: |
+        cd ${{ inputs.TF_ROOT }}
         git config --local --remove-section http."https://github.com/"
         git config --global url."https://ruchabhange:${{ inputs.TOKEN }}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
-        cd ${{ inputs.TF_ROOT }}
         terraform init -input=false
       shell: bash
     - name: Plan Terraform
