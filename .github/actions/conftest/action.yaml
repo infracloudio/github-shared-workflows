@@ -18,9 +18,6 @@ inputs:
     required: true
   TOKEN: 
     required: true 
-env:
-  #Sets token as environment variable
-  TOKEN: ${{ inputs.TOKEN }}
 runs:
   using: "composite"
   steps:
@@ -38,9 +35,8 @@ runs:
     - name: Initialize Terraform
       run: |
         git config --local --remove-section http."https://github.com/"
-        git config --global url."https://ruchabhange:${TOKEN}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
-        cd ${{ inputs.TF_ROOT }} 
-        #ls ${{ inputs.TF_ROOT }}/tfplan.json
+        git config --global url."https://ruchabhange:${{ inputs.TOKEN }}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
+        cd ${{ inputs.TF_ROOT }}
         terraform init -input=false
       shell: bash
     - name: Plan Terraform
