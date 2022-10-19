@@ -38,7 +38,7 @@ runs:
       shell: bash
     - name: Plan Terraform
       env: 
-      TOKEN: ${{ secrets.TOKEN }}
+          TOKEN: ${{ secrets.TOKEN }}
       id: plan
       run: |
         git config --local --remove-section http."https://github.com/"
