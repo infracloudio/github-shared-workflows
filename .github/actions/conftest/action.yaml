@@ -20,7 +20,7 @@ inputs:
     required: true 
 env:
   #Sets token as environment variable
-  TOKEN: ${{ input.TOKEN }}
+  TOKEN: ${{ inputs.TOKEN }}
 runs:
   using: "composite"
   steps:
