@@ -35,6 +35,7 @@ runs:
     - name: Initialize Terraform
       run: |
         cd ${{ inputs.TF_ROOT }}
+        ls ${{ inputs.TF_ROOT }}
         git config --local --remove-section http."https://github.com/"
         git config --global url."https://ruchabhange:${{ inputs.TOKEN }}@github.com/infracloudio".insteadOf "https://github.com/infracloudio"
         terraform init -input=false
