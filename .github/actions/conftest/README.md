@@ -99,3 +99,5 @@ The terraform code path should be specifies as : terraform-aws-rds/examples { re
 
 The value for matrix : dir should be the folder names inside your example directory for example {MySQL_db , Oracle_db , Postgres_db}
 
+values.tfvars is mandatory in every exmaple terraform code
+
