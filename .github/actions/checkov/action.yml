@@ -39,7 +39,7 @@ runs:
                         
     - name: Plan Terraform
       shell: bash
-      working-directory: example
+      working-directory: examples
       run: |
         subDir=$(for i in $(ls -d */); do echo ${i%%/}; done 2>&1)
         if [[ $subDir  =~ "file or directory" ]]; then
