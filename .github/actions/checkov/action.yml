@@ -60,10 +60,10 @@ runs:
           tfvars=`ls -1 *.tfvars 2>/dev/null | wc -l`
           if [ $tfvars != 0 ]; then
             terraform plan -var-file values.tfvars -out ${val}.binary -no-color
-            terraform show -json ${val}.binary | jq '.' > ./checkov-files/${val}.json
+            terraform show -json ${val}.binary | jq '.' > ./../checkov-files/${val}.json
           else
             terraform plan -out ${val}.binary -no-color
-            terraform show -json ${val}.binary | jq '.' > ./checkov-files/{val}.json
+            terraform show -json ${val}.binary | jq '.' > ./../checkov-files/{val}.json
           fi
             cd ..;
           done
