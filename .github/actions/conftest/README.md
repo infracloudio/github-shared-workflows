@@ -24,7 +24,8 @@ To checkout other private repositories deploy keys can been used, a github token
           repository: infracloudio/policy-as-code
           token: ${{ secrets.token }}
           path: ./policy-as-code
-```yaml
+```
+
 
 Following steps will add policies results to the pr, to add multiline comment an environment variable is created and used like shown in example below
 
