@@ -38,6 +38,7 @@ runs:
           Status: **${{ steps.awsconfig.outcome }}**
 
     - name: create directory for checkov files
+      shell: bash
       run: mkdir checkov-files
                         
     - name: Plan Terraform
@@ -47,7 +48,7 @@ runs:
         subDir=$(for i in $(ls -d */); do echo ${i%%/}; done 2>&1)
         if [[ $subDir  =~ "file or directory" ]]; then
 
-           echo "There are no directories in example folder"
+           echo "There are no directories in examples folder"
            exit 1
         else
           for val in $subDir; do     
