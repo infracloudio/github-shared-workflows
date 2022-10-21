@@ -73,11 +73,11 @@ runs:
       id: Bridgecrew-file-scanner
       uses: bridgecrewio/checkov-action@master
       with:
-        directory: ./checkov-files/
+        directory: ./checkov-files
         #file: "tfplan.json"
         output_format: github_failed_only
         soft_fail: false
-        skip_check: CKV_AWS_21,CKV_AWS_19,CKV_AWS_145,CKV2_AWS_6,CKV_AWS_144,CKV_AWS_18
+        #skip_check: CKV_AWS_21,CKV_AWS_19,CKV_AWS_145,CKV2_AWS_6,CKV_AWS_144,CKV_AWS_18
           
     - name: Post comment to GitHub PR
       uses: mshick/add-pr-comment@v1
