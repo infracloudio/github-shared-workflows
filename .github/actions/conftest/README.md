@@ -93,7 +93,9 @@ jobs:
 
 Two secrets are required namely `TOKEN` and `GITHUB_TOKEN` to be passed to the workflow, `GITHUB_TOKEN` can be directly used without defining in the actions secret.
 
-Note: 
+### Note: 
+
 The terraform code path should be specifies as : terraform-aws-rds/examples { reponame/examples/ }
+
 The value for matrix : dir should be the folder names inside your example directory for example {MySQL_db , Oracle_db , Postgres_db}
 
