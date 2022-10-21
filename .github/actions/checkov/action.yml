@@ -37,21 +37,32 @@ runs:
           AWS configuration failed. This is required to generate Terraform plan.
           Status: **${{ steps.awsconfig.outcome }}**
                         
-    - name: Initialize Terraform
-      shell: bash
-      run: |
-        terraform init -input=false
-          
     - name: Plan Terraform
       shell: bash
+      working-directory: example
       run: |
-        tfvars=`ls -1 *.tfvars 2>/dev/null | wc -l`
-        if [ $tfvars != 0 ]; then
-        terraform plan -var-file values.tfvars -out tfplan.binary -no-color
-        terraform show -json tfplan.binary | jq '.' > tfplan.json
+        subDir=$(for i in $(ls -d */); do echo ${i%%/}; done 2>&1)
+        if [[ $subDir  =~ "file or directory" ]]; then
+
+           echo "There are no directories in example folder"
+           exit 1
         else
-        terraform plan -out tfplan.binary -no-color
-        terraform show -json tfplan.binary | jq '.' > tfplan.json
+          for val in $subDir; do     
+          echo $val; 
+          cd $val;
+
+          terraform init -input=false
+
+          tfvars=`ls -1 *.tfvars 2>/dev/null | wc -l`
+          if [ $tfvars != 0 ]; then
+            terraform plan -var-file values.tfvars -out ${val}.binary -no-color
+            terraform show -json ${val}.binary | jq '.' > ${val}.json
+          else
+            terraform plan -out ${val}.binary -no-color
+            terraform show -json ${val}.binary | jq '.' > ${val}.json
+          fi
+            cd ..;
+          done
         fi
                 
     - name: checkov scan
