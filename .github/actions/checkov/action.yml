@@ -36,6 +36,9 @@ runs:
         message: |
           AWS configuration failed. This is required to generate Terraform plan.
           Status: **${{ steps.awsconfig.outcome }}**
+
+    - name: create directory for checkov files
+      run: mkdir checkov-files
                         
     - name: Plan Terraform
       shell: bash
@@ -56,10 +59,10 @@ runs:
           tfvars=`ls -1 *.tfvars 2>/dev/null | wc -l`
           if [ $tfvars != 0 ]; then
             terraform plan -var-file values.tfvars -out ${val}.binary -no-color
-            terraform show -json ${val}.binary | jq '.' > ${val}.json
+            terraform show -json ${val}.binary | jq '.' > ./checkov-files/${val}.json
           else
             terraform plan -out ${val}.binary -no-color
-            terraform show -json ${val}.binary | jq '.' > ${val}.json
+            terraform show -json ${val}.binary | jq '.' > ./checkov-files/{val}.json
           fi
             cd ..;
           done
@@ -69,8 +72,8 @@ runs:
       id: Bridgecrew-file-scanner
       uses: bridgecrewio/checkov-action@master
       with:
-        directory: .
-        file: "tfplan.json"
+        directory: ./checkov-files/
+        #file: "tfplan.json"
         output_format: github_failed_only
         soft_fail: false
         skip_check: CKV_AWS_21,CKV_AWS_19,CKV_AWS_145,CKV2_AWS_6,CKV_AWS_144,CKV_AWS_18
