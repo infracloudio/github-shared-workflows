@@ -1,0 +1,9 @@
+branch: main
+skip-check:
+  - CKV_AWS_21
+  - CKV_AWS_19
+  - CKV_AWS_145
+  - CKV2_AWS_6
+  - CKV_AWS_144
+  - CKV_AWS_18
+soft_fail: false

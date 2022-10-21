@@ -76,8 +76,8 @@ runs:
         directory: ./checkov-files
         #file: "tfplan.json"
         output_format: github_failed_only
-        soft_fail: false
-        #skip_check: CKV_AWS_21,CKV_AWS_19,CKV_AWS_145,CKV2_AWS_6,CKV_AWS_144,CKV_AWS_18
+        config_file: ../../config/checkov_config
+        
           
     - name: Post comment to GitHub PR
       uses: mshick/add-pr-comment@v1
