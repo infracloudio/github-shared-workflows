@@ -73,10 +73,10 @@ runs:
       id: Bridgecrew-file-scanner
       uses: bridgecrewio/checkov-action@master
       with:
-        directory: ./checkov-files
+        #directory: ./checkov-files
         #file: "tfplan.json"
         output_format: github_failed_only
-        config_file: ./github-shared-workflows/.github/config/checkov_config.yaml
+        config_file: ./github-shared-workflows/.github/config/config.yaml
         
           
     - name: Post comment to GitHub PR
