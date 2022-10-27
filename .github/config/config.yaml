@@ -1,6 +1,7 @@
 branch: main
 directory:
   - ./checkov-files
+download-external-modules: true
 skip-check:
   - CKV_AWS_21
   - CKV_AWS_19
