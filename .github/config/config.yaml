@@ -11,4 +11,5 @@ skip-check:
   - CKV_AWS_18
 skip-framework:
   - kubernetes
+  - terraform
 soft-fail: false
