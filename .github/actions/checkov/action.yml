@@ -76,7 +76,7 @@ runs:
         directory: ./checkov-files
         #file: "tfplan.json"
         output_format: github_failed_only
-        config_file: ./../../config/checkov_config
+        config_file: ./github-shared-workflows/.github/config/checkov_config
         
           
     - name: Post comment to GitHub PR
