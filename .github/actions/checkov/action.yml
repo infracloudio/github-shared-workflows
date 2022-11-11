@@ -1,0 +1,88 @@
+name: "Checkov Workflow"
+description: "create a plan and run checkov scan againts it"
+
+inputs:
+  AWS_REGION:
+    description: "AWS region"
+    required: true
+  OIDC_ROLE_ARN:
+    description: "OIDC role arn, required to authenticate aws"
+    required: true
+  GITHUB_TOKEN:
+    description: "GITHUB token"
+    required: true
+  
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_wrapper: false
+      
+    - name: Configure AWS Credentials
+      id: awsconfig
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: ${{inputs.AWS_REGION}}
+        role-to-assume: ${{ inputs.OIDC_ROLE_ARN }}
+                    
+    - name: Post comment to GitHub PR if aws config failed
+      uses: mshick/add-pr-comment@v1
+      if: ${{ failure() && steps.awsconfig.outcome == 'failure' }}
+      with:
+        repo-token: ${{ inputs.GITHUB_TOKEN }}
+        allow-repeats: true
+        message: |
+          AWS configuration failed. This is required to generate Terraform plan.
+          Status: **${{ steps.awsconfig.outcome }}**
+
+    - name: create directory for checkov files
+      shell: bash
+      run: mkdir checkov-files
+                        
+    - name: Plan Terraform
+      shell: bash
+      working-directory: examples
+      run: |
+        subDir=$(for i in $(ls -d */); do echo ${i%%/}; done 2>&1)
+        if [[ $subDir  =~ "file or directory" ]]; then
+
+           echo "There are no directories in examples folder"
+           exit 1
+        else
+          for val in $subDir; do     
+          echo $val; 
+          cd $val;
+
+          terraform init -input=false
+
+          tfvars=`ls -1 *.tfvars 2>/dev/null | wc -l`
+          if [ $tfvars != 0 ]; then
+            terraform plan -var-file values.tfvars -out ${val}.binary -no-color
+            terraform show -json ${val}.binary | jq '.' > ./../../checkov-files/${val}.json
+          else
+            terraform plan -out ${val}.binary -no-color
+            terraform show -json ${val}.binary | jq '.' > ./../../checkov-files/{val}.json
+          fi
+          cd ..;
+          done
+        fi
+                
+    - name: checkov scan
+      id: Bridgecrew-file-scanner
+      uses: bridgecrewio/checkov-action@master
+      with:
+        #directory: ./checkov-files
+        #file: "tfplan.json"
+        output_format: github_failed_only
+        config_file: ./github-shared-workflows/.github/config/config.yaml
+        
+          
+    - name: Post comment to GitHub PR
+      uses: mshick/add-pr-comment@v1
+      if: ${{ failure() && steps.Bridgecrew-file-scanner.outcome == 'failure' }}
+      with:
+        repo-token: ${{ inputs.GITHUB_TOKEN }}
+        message: |
+          ${{ env.CHECKOV_RESULTS }}
