@@ -1,0 +1,17 @@
+name: "docker image updater Workflow"
+description: "image updater according to deployment for docker"
+
+inputs:
+   destination-file
+      description: "destination file where we need to replace docker image name after deployment"
+      required: true
+  
+runs:
+  using: "composite"
+  steps:
+      - name: image-updater
+        run: |
+           version=$(cat ./${{ input.destination-file }} | grep productcatalouge-image: | awk '{print $2}' | cut -d ':' -f 2 | rev | cut -c2- | rev)
+           echo "$version for test enviornment"
+           sed -i "s/$version/${{ github.sha }}/" ./${{ input.destination-file }}
+           cat ./${{ input.destination-file }} | grep productcatalouge-image: | awk '{print $2}'
