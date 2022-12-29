@@ -11,7 +11,6 @@ runs:
   steps:
       - name: image-updater
         run: |
-           version=$(cat ./${{ input.destination-file }} | grep productcatalouge-image: | awk '{print $2}' | cut -d ':' -f 2 | rev | cut -c2- | rev)
-           echo "$version for test enviornment"
-           sed -i "s/$version/${{ github.sha }}/" ./${{ input.destination-file }}
-           cat ./${{ input.destination-file }} | grep productcatalouge-image: | awk '{print $2}'
+           version=$(cat ${{ input.destination-file }} | grep productcatalouge-image: | awk '{print $2}' | cut -d ':' -f 2 | rev | cut -c2- | rev)
+           sed -i "s/$version/${{ github.sha }}/" ${{ input.destination-file }}
+           cat ${{ input.destination-file }} | grep productcatalouge-image: | awk '{print $2}'
