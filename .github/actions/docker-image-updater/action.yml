@@ -2,7 +2,7 @@ name: "docker image updater Workflow"
 description: "image updater according to deployment for docker"
 
 inputs:
-   destination-file
+   destination-file:
       description: "destination file where we need to replace docker image name after deployment"
       required: true
   
