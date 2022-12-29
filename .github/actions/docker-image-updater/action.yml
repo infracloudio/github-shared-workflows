@@ -10,6 +10,7 @@ runs:
   using: "composite"
   steps:
       - name: image-updater
+        shell: bash   
         run: |
            version=$(cat ${{ input.destination-file }} | grep productcatalouge-image: | awk '{print $2}' | cut -d ':' -f 2 | rev | cut -c2- | rev)
            sed -i "s/$version/${{ github.sha }}/" ${{ input.destination-file }}
